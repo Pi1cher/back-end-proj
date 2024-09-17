@@ -5,9 +5,10 @@ import { IUser } from "../interfaces/user.interface";
 import { User } from "../models/user.model";
 
 class UserRepository {
-  public async create(data: IUser, hashedPassword: string): Promise<IUser> {
+  public async create(dto: IUser, hashedPassword: string): Promise<IUser> {
     try {
-      return await User.create({ ...data, password: hashedPassword });
+      // @ts-ignore
+      return await User.create({ ...dto, password: hashedPassword });
     } catch (e) {
       throw new ApiError(e.message, e.status);
     }
@@ -30,12 +31,11 @@ class UserRepository {
   }
 
   public async upgradeAccount(id: string): Promise<IUser> {
-    const upgradedUser = await User.findOneAndUpdate(
+    return await User.findOneAndUpdate(
       { _id: id },
       { accountType: UserAccountType.premium },
       { returnDocument: "after" },
     );
-    return upgradedUser;
   }
 }
 export const userRepository = new UserRepository();

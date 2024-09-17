@@ -1,9 +1,11 @@
 import { UserAccountType } from "../enums/user/accountType.enum";
 import { ApiError } from "../errors/api.error";
+import { IAd } from "../interfaces/ad.interface";
+import { ConversionRate } from "../interfaces/conversion.interface";
+import { SearchParams } from "../interfaces/searchParams.interface";
 import { adRepository } from "../repositories/ad.repository";
 import { userRepository } from "../repositories/user.repository";
-import { IAd } from "../interfaces/ad.interface";
-import { SearchParams } from "../interfaces/searchParams.interface";
+import { convertPrice, fetchConversionRates } from "./currency.service";
 
 class AdService {
   public async findAll(): Promise<IAd[]> {
@@ -13,6 +15,15 @@ class AdService {
     return await adRepository.findById(id);
   }
   public async create(data: IAd, loggedUserId: string): Promise<IAd> {
+    const conversionRates: ConversionRate[] = await fetchConversionRates();
+    if (!conversionRates) {
+      throw new ApiError("Failed to fetch conversion rates", 500);
+    }
+    const { convertedCurrencies, buyRates, saleRates } = convertPrice(
+      data.price,
+      data.currency,
+      conversionRates,
+    );
     const user = await userRepository.findById(loggedUserId);
     const loggedUserAds = await adRepository.findByParams({
       authorId: loggedUserId,
@@ -26,7 +37,19 @@ class AdService {
         403,
       );
     }
-    return await adRepository.create(data, loggedUserId);
+    return await adRepository.create(
+      {
+        ...data,
+        convertedCurrencies: convertedCurrencies,
+        currencyRate: {
+          dollarBuy: buyRates["USD"].toString(),
+          dollarSale: saleRates["USD"].toString(),
+          euroBuy: buyRates["EUR"].toString(),
+          euroSale: saleRates["EUR"].toString(),
+        },
+      },
+      loggedUserId,
+    );
   }
   public async updateById(id: string, data: Partial<IAd>): Promise<IAd> {
     return await adRepository.updateById(id, data);
@@ -45,7 +68,7 @@ class AdService {
     };
     const priceForCarInRegion = await adRepository.findByParams(searchParams);
     const totalPrices = priceForCarInRegion.reduce(
-      (sum, ad) => sum + ad.price.value,
+      (sum, ad) => sum + ad.price,
       0,
     );
     const averagePrice = totalPrices / priceForCarInRegion.length;
@@ -58,7 +81,7 @@ class AdService {
     };
     const priceForCarInRegion = await adRepository.findByParams(searchParams);
     const totalPrices = priceForCarInRegion.reduce(
-      (sum, ad) => sum + ad.price.value,
+      (sum, ad) => sum + ad.price,
       0,
     );
     const averagePrice = totalPrices / priceForCarInRegion.length;

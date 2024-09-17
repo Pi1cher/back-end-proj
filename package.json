@@ -17,12 +17,16 @@
   "author": "p1lcher",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
+    "bad-words": "^4.0.0",
+    "badwords-list": "^2.0.1-4",
     "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.0",
     "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.6.2"
+    "mongoose": "^8.6.2",
+    "obscenity": "^0.4.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",

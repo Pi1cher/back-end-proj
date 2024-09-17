@@ -1,7 +1,7 @@
 import { ApiError } from "../errors/api.error";
 import { IAd } from "../interfaces/ad.interface";
-import { Ad } from "../models/ad.model";
 import { SearchParams } from "../interfaces/searchParams.interface";
+import { Ad } from "../models/ad.model";
 
 class AdRepository {
   public async findAll(): Promise<IAd[]> {
