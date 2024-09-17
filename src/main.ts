@@ -4,6 +4,7 @@ import * as mongoose from "mongoose";
 import { config } from "./configs/configs";
 import { adRouter } from "./routers/ad.router";
 import { authRouter } from "./routers/auth.router";
+import { messageRouter } from "./routers/message.router";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/ads", adRouter);
 app.use("/auth", authRouter);
+app.use("/messages", messageRouter);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   const status = err.status || 500;
